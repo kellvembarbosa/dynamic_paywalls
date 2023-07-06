@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_paywalls/dynamic_paywalls.dart';
 import 'package:get/get.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Qonversion SDK
-  Paywalls.init(
+  await Paywalls.init(
     projectKey: 'Agy3OwEMnl2dt7RENVHxsdaJcRVLuajZ',
     launchMode: QLaunchMode.subscriptionManagement,
     enableSearchAds: true,
+    environment: QEnvironment.sandbox,
     othersConfigs: () {
       // Add your configs here
       debugPrint("executou othersConfigs");
@@ -52,18 +53,18 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Paywall Example',
+              'Este user é premium? ${Paywalls.paywallService.isPremiumUser ? "Premium User" : "Free User"}',
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => Paywall()),
+        onPressed: () => Get.to(() => Paywalls.getPaywall()),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

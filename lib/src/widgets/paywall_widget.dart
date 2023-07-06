@@ -9,10 +9,12 @@ class Paywall extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return paywallService.widgetData == null
-        ? const Center(
-            child: CircularProgressIndicator(),
-          )
-        : paywallService.widgetData!.build(context: context);
+    return Obx(
+      () => paywallService.widgetData == null && paywallService.isLoading == true
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : paywallService.widgetData!.build(context: context),
+    );
   }
 }

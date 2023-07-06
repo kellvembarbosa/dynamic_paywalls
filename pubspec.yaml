@@ -13,6 +13,7 @@ dependencies:
   json_dynamic_widget: ^6.0.6+5
   qonversion_flutter: ^6.1.1
   get: ^4.6.5
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:

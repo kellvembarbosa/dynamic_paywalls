@@ -1,26 +1,46 @@
-﻿import 'package:dynamic_paywalls/dynamic_paywalls.dart';
+﻿import 'dart:convert';
+
+import 'package:dynamic_paywalls/dynamic_paywalls.dart';
 import 'package:dynamic_paywalls/src/controllers/controller_paywall.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class Paywalls {
   static late final CustomConfig? customConfig;
+  static late final PaywallService paywallService;
+  static bool _isInitialized = false; // Variável para rastrear se o init() já foi chamado
+
   Paywalls._internal();
 
   /// Initialize Qonversion SDK
-  ///
   static init({
     required String projectKey,
     QLaunchMode launchMode = QLaunchMode.subscriptionManagement,
     bool enableSearchAds = false,
+    QEnvironment environment = QEnvironment.production,
     CustomConfig? customConfigs,
     Function? othersConfigs,
-  }) {
-    // Inicialize o singleton aqui, se necessário
-    Get.putAsync(() => PaywallService().init());
+  }) async {
+    if (_isInitialized) {
+      return; // Retorna se o init() já foi chamado
+    }
+    _isInitialized = true; // Marca o init() como chamado
+
+    // Inicialize o GetStorage
+    await GetStorage.init();
+
+    // Inicialize o singleton
+    if (Get.isRegistered<PaywallService>()) {
+      paywallService = Get.find();
+    } else {
+      // Inicialize o singleton aqui, se necessário
+      await Get.putAsync(() => PaywallService().init());
+      paywallService = Get.find();
+    }
 
     // Start Qonversion SDK
-    final config = QonversionConfigBuilder(projectKey, launchMode).build();
+    final config = QonversionConfigBuilder(projectKey, launchMode).setEnvironment(environment).build();
     Qonversion.initialize(config);
 
     // Enable Search Ads
@@ -42,13 +62,18 @@ class Paywalls {
 
   /// Get the paywall widget
   static Widget getPaywall() {
+    updateRemoteConfigs();
+
     return Paywall();
   }
 
   // get remote configs
   static updateRemoteConfigs() async {
+    debugPrint("updateRemoteConfigs");
     final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
-    Get.find<PaywallService>().setQRemoteConfig(remoteConfig);
+    paywallService.box.write('remoteConfig', jsonEncode(remoteConfig.payload));
+
+    paywallService.setQRemoteConfig(remoteConfig);
   }
 
   /// Check if the user is a premium user
