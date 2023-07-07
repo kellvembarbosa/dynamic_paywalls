@@ -1,14 +1,19 @@
 ﻿import 'dart:convert';
+import 'dart:io';
 
 import 'package:dynamic_paywalls/dynamic_paywalls.dart';
 import 'package:dynamic_paywalls/src/controllers/controller_paywall.dart';
+import 'package:dynamic_paywalls/src/repositories/paywall_connect.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class Paywalls {
-  static late final CustomConfig? customConfig;
+  static late final CustomConfig? _customConfig;
   static late final PaywallService paywallService;
+  static late final Map<String, dynamic> _paywallFallback;
+  static final PaywallConnect _paywallConnect = PaywallConnect();
+  static late final String _paywallUrl;
   static bool _isInitialized = false; // Variável para rastrear se o init() já foi chamado
 
   Paywalls._internal();
@@ -16,10 +21,17 @@ class Paywalls {
   /// Initialize Qonversion SDK
   static init({
     required String projectKey,
+
+    /// The paywall url to be used if the remote config is available
+    required String paywallUrl,
+
+    /// The fallback paywall to be used if the remote config is not available
+    required Map<String, dynamic> paywallFallback,
     QLaunchMode launchMode = QLaunchMode.subscriptionManagement,
     bool enableSearchAds = false,
+    bool isDesignMode = false,
     QEnvironment environment = QEnvironment.production,
-    CustomConfig? customConfigs,
+    CustomConfig? customConfig,
     Function? othersConfigs,
   }) async {
     if (_isInitialized) {
@@ -48,39 +60,65 @@ class Paywalls {
       Qonversion.getSharedInstance().collectAppleSearchAdsAttribution();
     }
 
-    // get remote configs
-    updateRemoteConfigs();
-
     // Custom configs
-    customConfig = customConfigs;
+    _customConfig = customConfig;
+
+    // Paywall url
+    _paywallUrl = paywallUrl;
+
+    // Paywall fallback
+    _paywallFallback = paywallFallback;
 
     // Others configs
     if (othersConfigs != null) {
       othersConfigs();
     }
+
+    // get remote configs
+    updateRemoteConfigs(isDesignMode: Platform.isAndroid || Platform.isIOS ? isDesignMode : true);
   }
 
   /// Get the paywall widget
-  static Widget getPaywall() {
-    updateRemoteConfigs();
-
+  static Widget getPaywall({bool isDesignMode = false, Map<String, dynamic>? data}) {
+    updateRemoteConfigs(isDesignMode: isDesignMode);
     return Paywall();
   }
 
   // get remote configs
-  static updateRemoteConfigs() async {
+  static updateRemoteConfigs({bool isDesignMode = false, Map<String, dynamic>? data}) async {
     debugPrint("updateRemoteConfigs");
-    final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
-    paywallService.box.write('remoteConfig', jsonEncode(remoteConfig.payload));
 
-    paywallService.setQRemoteConfig(remoteConfig);
+    if (isDesignMode) {
+      paywallService.box.write('remoteConfig', jsonEncode(data ?? _paywallFallback));
+      paywallService.setQRemoteConfig();
+      return;
+    }
+
+    final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
+
+    try {
+      if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
+        final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
+
+        paywallService.box.write('remoteConfig', jsonEncode(paywallRemote));
+        paywallService.setQRemoteConfig();
+      } else {
+        paywallService.box.write('remoteConfig', jsonEncode(remoteConfig.payload));
+        paywallService.setQRemoteConfig();
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+
+      paywallService.box.write('remoteConfig', jsonEncode(_paywallFallback));
+      paywallService.setQRemoteConfig();
+    }
   }
 
   /// Check if the user is a premium user
   static Future<void> checkPermissions() async {
     try {
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().checkEntitlements();
-      final premium = entitlements[customConfig?.entitlements ?? 'premium'];
+      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
       if (premium != null && premium.isActive) {
         switch (premium.renewState) {
           case QEntitlementRenewState.willRenew:
@@ -112,7 +150,7 @@ class Paywalls {
     try {
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().purchase(productId);
 
-      final premium = entitlements[customConfig?.entitlements ?? 'premium'];
+      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
 
       if (premium != null && premium.isActive) {
         switch (premium.renewState) {
@@ -152,7 +190,7 @@ class Paywalls {
   static Future<bool> restorePurchases() async {
     try {
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().restore();
-      final premium = entitlements[customConfig?.entitlements ?? 'premium'];
+      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
       if (premium != null && premium.isActive) {
         switch (premium.renewState) {
           case QEntitlementRenewState.willRenew:

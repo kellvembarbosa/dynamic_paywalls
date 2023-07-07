@@ -1,0 +1,49 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - Qonversion (4.0.0):
+    - Qonversion/Main (= 4.0.0)
+  - Qonversion/Main (4.0.0)
+  - qonversion_flutter (5.0.0):
+    - FlutterMacOS
+    - QonversionSandwich (= 2.0.1)
+  - QonversionSandwich (2.0.1):
+    - Qonversion (= 4.0.0)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - qonversion_flutter (from `Flutter/ephemeral/.symlinks/plugins/qonversion_flutter/macos`)
+  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - Qonversion
+    - QonversionSandwich
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  qonversion_flutter:
+    :path: Flutter/ephemeral/.symlinks/plugins/qonversion_flutter/macos
+  shared_preferences_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+
+SPEC CHECKSUMS:
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  path_provider_foundation: eaf5b3e458fc0e5fbb9940fb09980e853fe058b8
+  Qonversion: ae70809310aa2efc43b7df7770c3a65fdec7407b
+  qonversion_flutter: 5554b5ffc5126ff1c430a2ff299f7de7d1dbec9e
+  QonversionSandwich: 95409320b792f124a9a65d60e8137cfbb1231620
+  shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
+
+PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
+
+COCOAPODS: 1.12.1
