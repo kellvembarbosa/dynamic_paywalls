@@ -123,6 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               () => Paywalls.getPaywall(
                                 isDesignMode: controller.isDesignMode,
                                 data: controller.paywallLayout ?? loadingLayout,
+                                onPaywallClose: () {
+                                  Get.back();
+                                },
                               ),
                             );
                           },
@@ -142,6 +145,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         () => Paywalls.getPaywall(
                           isDesignMode: controller.isDesignMode,
                           data: controller.paywallLayout ?? loadingLayout,
+                          onPaywallClose: () {
+                            Get.back();
+                          },
                         ),
                       ),
                       child: const Text("Get Paywall"),

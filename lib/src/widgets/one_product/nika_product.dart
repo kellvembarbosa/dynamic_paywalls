@@ -94,7 +94,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
               BtnCloseOneWidget(
                 showBtnCloseTimer: showBtnCloseTimer,
                 btnCloseColor: HexColor(data["stylePaywall"]["btnCloseColor"]),
-                onPaywallClose: widget.configPaywall.onPaywallClose(),
+                onPaywallClose: widget.configPaywall.onPaywallClose,
               ),
               const Spacer(),
               SizedBox(

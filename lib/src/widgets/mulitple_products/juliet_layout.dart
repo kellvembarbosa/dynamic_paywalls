@@ -239,7 +239,7 @@ class _JulietLayoutState extends State<JulietLayout> with BaseLayoutMixin {
         BtnCloseOneWidget(
           showBtnCloseTimer: showBtnCloseTimer,
           btnCloseColor: HexColor(data["stylePaywall"]["btnCloseColor"]),
-          onPaywallClose: widget.configPaywall.onPaywallClose(),
+          onPaywallClose: widget.configPaywall.onPaywallClose,
         ),
       ].toColumn().safeArea(top: true),
     ].toStack().backgroundColor(HexColor(data["stylePaywall"]["backgroundColor"]));
