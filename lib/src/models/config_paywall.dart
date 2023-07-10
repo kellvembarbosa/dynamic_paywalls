@@ -19,13 +19,14 @@ class ConfigPaywall {
     debugPrint("Paywall closed");
   }
 
-  factory ConfigPaywall.fromJson(Map<String, dynamic> json) {
+  factory ConfigPaywall.fromJson(Map<String, dynamic> json, {Function? onPaywallClose}) {
     return ConfigPaywall(
       isHardPaywall: json['is_hard_paywall'] ?? false,
       showCloseAfterSeconds: json['show_close_after_seconds'] ?? 0,
       layoutPaywall: LayoutPaywall.fromJson(
         json['layout_paywall'],
       ),
+      onPaywallClose: onPaywallClose ?? _defaultOnPaywallClose,
     );
   }
 

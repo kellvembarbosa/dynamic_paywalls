@@ -84,13 +84,13 @@ class Paywalls {
   }
 
   /// Get the paywall widget
-  static Widget getPaywall({bool isDesignMode = false, ConfigPaywall? data}) {
-    updateRemoteConfigs(isDesignMode: isDesignMode, data: data);
+  static Widget getPaywall({bool isDesignMode = false, ConfigPaywall? data, required Function onPaywallClose}) {
+    updateRemoteConfigs(isDesignMode: isDesignMode, data: data, onPaywallClose: onPaywallClose);
     return Paywall();
   }
 
   // get remote configs
-  static updateRemoteConfigs({bool isDesignMode = false, ConfigPaywall? data}) async {
+  static updateRemoteConfigs({Function? onPaywallClose, bool isDesignMode = false, ConfigPaywall? data}) async {
     debugPrint("updateRemoteConfigs $isDesignMode $data");
 
     if (isDesignMode) {
@@ -104,9 +104,9 @@ class Paywalls {
           if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
             final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
 
-            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote));
+            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote, onPaywallClose: onPaywallClose));
           } else {
-            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload));
+            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload, onPaywallClose: onPaywallClose));
           }
         } catch (e) {
           debugPrint(e.toString());
