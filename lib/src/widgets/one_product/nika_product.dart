@@ -94,6 +94,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
               BtnCloseOneWidget(
                 showBtnCloseTimer: showBtnCloseTimer,
                 btnCloseColor: HexColor(data["stylePaywall"]["btnCloseColor"]),
+                onPaywallClose: widget.configPaywall.onPaywallClose(),
               ),
               const Spacer(),
               SizedBox(
@@ -134,7 +135,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                   ).width(width * 0.8).padding(vertical: 12).backgroundColor(Colors.blue).clipRRect(all: 12).gestures(
                     onTap: () async {
                       debugPrint("Button tapped");
-                      await Paywalls.purchase(data["product_id"]);
+                      await Paywalls.purchase(data["product_id"], widget.configPaywall.onPaywallClose);
                     },
                   ).center(),
                   <Widget>[

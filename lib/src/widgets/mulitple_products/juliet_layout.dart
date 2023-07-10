@@ -222,8 +222,8 @@ class _JulietLayoutState extends State<JulietLayout> with BaseLayoutMixin {
             )
                 .padding(vertical: 16)
                 .gestures(
-                  onTap: () {
-                    Paywalls.purchase(data["products"][selectedProduct]["product_id"]);
+                  onTap: () async {
+                    await Paywalls.purchase(data["products"][selectedProduct]["product_id"], widget.configPaywall.onPaywallClose);
                   },
                 )
                 .width(double.infinity)
@@ -239,6 +239,7 @@ class _JulietLayoutState extends State<JulietLayout> with BaseLayoutMixin {
         BtnCloseOneWidget(
           showBtnCloseTimer: showBtnCloseTimer,
           btnCloseColor: HexColor(data["stylePaywall"]["btnCloseColor"]),
+          onPaywallClose: widget.configPaywall.onPaywallClose(),
         ),
       ].toColumn().safeArea(top: true),
     ].toStack().backgroundColor(HexColor(data["stylePaywall"]["backgroundColor"]));

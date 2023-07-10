@@ -148,7 +148,7 @@ class Paywalls {
   }
 
   /// Purchase a product
-  static Future<void> purchase(String productId, {Function? showUserCancel}) async {
+  static Future<void> purchase(String productId, Function onPaywallClose, {Function? showUserCancel}) async {
     paywallService.isLoading = true;
     try {
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().purchase(productId);
@@ -162,7 +162,7 @@ class Paywalls {
             // .willRenew is the state of an auto-renewable subscription
             // .nonRenewable is the state of consumable/non-consumable IAPs that could unlock lifetime access
             Get.find<PaywallService>().isPremiumUser = true;
-            Get.back();
+            onPaywallClose.call();
             break;
           case QEntitlementRenewState.billingIssue:
             // Grace period: entitlement is active, but there was some billing issue.

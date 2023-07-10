@@ -7,8 +7,9 @@ import 'package:styled_widget/styled_widget.dart';
 class BtnCloseOneWidget extends StatelessWidget {
   final bool showBtnCloseTimer;
   final Color btnCloseColor;
+  final Function onPaywallClose;
 
-  const BtnCloseOneWidget({super.key, this.showBtnCloseTimer = false, this.btnCloseColor = Colors.white});
+  const BtnCloseOneWidget({super.key, this.showBtnCloseTimer = false, this.btnCloseColor = Colors.white, required this.onPaywallClose});
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +36,11 @@ class BtnCloseOneWidget extends StatelessWidget {
 
               if (result) {
                 debugPrint("Restore success");
-                Get.back();
+                Get.snackbar("Success".tr, "Purchase restored".tr);
+                onPaywallClose.call();
               } else {
                 debugPrint("Restore failed");
-                Get.snackbar("Not found", "Purchase not found".tr);
+                Get.snackbar("Not found".tr, "Purchase not found".tr);
               }
             },
           ).padding(bottom: 4),
