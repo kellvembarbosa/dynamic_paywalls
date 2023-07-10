@@ -77,13 +77,11 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
 
     return Stack(
       children: [
-        Expanded(
-          child: CachedNetworkImage(
-            imageUrl: data["image"],
-            width: width,
-            height: double.infinity,
-            fit: BoxFit.cover,
-          ),
+        CachedNetworkImage(
+          imageUrl: data["image"],
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
         ),
         SizedBox(
           height: height,
@@ -155,7 +153,9 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                     const Text("and").fontSize(12).fontWeight(FontWeight.w300),
                     const SizedBox(width: 4),
                     const Text("Terms").textStyle(const TextStyle(decoration: TextDecoration.underline)).fontSize(12).gestures(
-                          onTap: () => _launchUrl(Uri.parse(data["openTermsLink"])),
+                          onTap: () => _launchUrl(
+                            Uri.parse(data["openTermsLink"]),
+                          ),
                         ),
                   ]
                       .toRow(

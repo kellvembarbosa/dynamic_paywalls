@@ -22,7 +22,8 @@ class BtnCloseOneWidget extends StatelessWidget {
               ? FadeIn(
                   child: IconButton(
                     onPressed: () {
-                      Get.back();
+                      debugPrint("Close tapped");
+                      onPaywallClose.call();
                     },
                     icon: Icon(Icons.close, color: btnCloseColor),
                   ),

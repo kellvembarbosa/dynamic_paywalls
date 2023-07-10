@@ -6,7 +6,7 @@ class DesignController extends GetxController {
   final _paywallLayout = Rxn<ConfigPaywall>(
     ConfigPaywall(
       layoutPaywall: LayoutPaywall(
-        model: "juliet_paywall",
+        model: "nika_paywall",
         args: {},
       ),
     ),

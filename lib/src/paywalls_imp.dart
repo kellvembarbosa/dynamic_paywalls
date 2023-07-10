@@ -17,6 +17,25 @@ class Paywalls {
   Paywalls._internal();
 
   /// Initialize Qonversion SDK
+  /// ```
+  /// await Paywalls.init(
+  ///   projectKey: "YOUR_PROJECT_KEY",
+  ///   paywallUrl: "https://YOUR_PAYWALL_URL",
+  ///   paywallFallback: ConfigPaywall(
+  ///     layoutPaywall: LayoutPaywall(
+  ///     model: "one_product",
+  ///     args: {},
+  ///   ),
+  ///   launchMode: QLaunchMode.subscriptionManagement,
+  ///   enableSearchAds: true,
+  ///   environment: QEnvironment.production,
+  ///   othersConfigs: () {
+  ///     // Add your configs here
+  ///     debugPrint("executou othersConfigs");
+  ///   },
+  /// );
+  ///
+  /// ```
   static init({
     required String projectKey,
 
