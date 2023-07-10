@@ -6,22 +6,18 @@ import 'package:dynamic_paywalls/dynamic_paywalls.dart';
 import 'package:get/get.dart';
 import 'package:device_preview/device_preview.dart';
 
+import 'controller.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Get.lazyPut(() => DesignController(), fenix: true);
 
   // Initialize Qonversion SDK
   await Paywalls.init(
     projectKey: 'Agy3OwEMnl2dt7RENVHxsdaJcRVLuajZ',
     paywallUrl: 'https://dash.newipe.com/assets/038e9263-5990-4e21-bf49-21fd8c705d61',
-    paywallFallback: {
-      "type": "scaffold",
-      "args": {
-        "body": {
-          "type": "center",
-          "child": {"type": "circular_progress_indicator"}
-        }
-      }
-    },
+    paywallFallback: loadingLayout,
     launchMode: QLaunchMode.subscriptionManagement,
     enableSearchAds: true,
     environment: QEnvironment.sandbox,
@@ -35,6 +31,20 @@ void main() async {
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
+      tools: [
+        SliverToBoxAdapter(
+          // Envolve o Material em um SliverToBoxAdapter
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Container(
+              height: 320,
+              width: double.infinity,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        ...DevicePreview.defaultTools,
+      ],
       builder: (context) => const MyApp(),
     ),
   );
@@ -55,7 +65,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Design Preview'),
     );
   }
 }
@@ -69,7 +79,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool isDesignMode = false;
+  final controller = Get.find<DesignController>();
 
   @override
   Widget build(BuildContext context) {
@@ -93,29 +103,32 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     child: FilledButton(
                       onPressed: () => Get.to(
-                        Paywalls.getPaywall(
-                          isDesignMode: isDesignMode,
-                          data: {
-                            "type": "scaffold",
-                            "args": {
-                              "body": {
-                                "type": "center",
-                                "child": {
-                                  "type": "text",
-                                  "args": {
-                                    "data": "Hello World",
-                                    "style": {
-                                      "type": "text_style",
-                                      "args": {"color": "#000000", "font_size": 24.0, "font_weight": "bold"}
-                                    }
-                                  }
-                                }
-                              }
-                            }
+                        () => DefaultOnboarding(
+                          currentStep: 0,
+                          items: const [
+                            OnboardingItem(
+                              title: "Online Shopping",
+                              subtitle: "You can shopping anytime, \nanywhere",
+                              image: "https://picsum.photos/seed/1/200/300",
+                            ),
+                            OnboardingItem(
+                              title: "Detailed Recipes",
+                              subtitle: "You can shopping anytime, \nanywhere",
+                              image: "https://picsum.photos/seed/1/200/300",
+                            ),
+                          ],
+                          btnTexts: const ["Pular", "Próximo"],
+                          onDonePressed: () {
+                            Get.off(
+                              () => Paywalls.getPaywall(
+                                isDesignMode: controller.isDesignMode,
+                                data: controller.paywallLayout ?? loadingLayout,
+                              ),
+                            );
                           },
                         ),
                       ),
-                      child: const Text("Get Paywall"),
+                      child: const Text("Default onboarding"),
                     ),
                   ),
                 ],
@@ -124,12 +137,30 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => setState(() => isDesignMode = !isDesignMode),
-                      child: Text(isDesignMode ? "Sair do design mode" : "Entrar no design mode"),
+                    child: FilledButton(
+                      onPressed: () => Get.to(
+                        () => Paywalls.getPaywall(
+                          isDesignMode: controller.isDesignMode,
+                          data: controller.paywallLayout ?? loadingLayout,
+                        ),
+                      ),
+                      child: const Text("Get Paywall"),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 20),
+              Obx(
+                () => Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => controller.isDesignMode = !controller.isDesignMode,
+                        child: Text(controller.isDesignMode ? "Sair do design mode" : "Entrar no design mode"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

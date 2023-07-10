@@ -10,10 +10,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  json_dynamic_widget: ^6.0.6+5
   qonversion_flutter: ^6.1.1
   get: ^4.6.5
   get_storage: ^2.1.1
+  json_editor: ^0.0.8
+  styled_widget: ^0.4.1
+  flutter_rating_stars: ^1.0.3+4
+  hexcolor: ^3.0.1
+  cached_network_image: ^3.2.3
+  url_launcher: ^6.1.12
+  animate_do: ^3.0.2
+  collection: ^1.17.1
 
 dev_dependencies:
   flutter_test:

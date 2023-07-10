@@ -1,8 +1,6 @@
-﻿import 'dart:convert';
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:dynamic_paywalls/dynamic_paywalls.dart';
-import 'package:dynamic_paywalls/src/controllers/controller_paywall.dart';
 import 'package:dynamic_paywalls/src/repositories/paywall_connect.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,7 +9,7 @@ import 'package:get_storage/get_storage.dart';
 class Paywalls {
   static late final CustomConfig? _customConfig;
   static late final PaywallService paywallService;
-  static late final Map<String, dynamic> _paywallFallback;
+  static late final ConfigPaywall _paywallFallback;
   static final PaywallConnect _paywallConnect = PaywallConnect();
   static late final String _paywallUrl;
   static bool _isInitialized = false; // Variável para rastrear se o init() já foi chamado
@@ -26,7 +24,7 @@ class Paywalls {
     required String paywallUrl,
 
     /// The fallback paywall to be used if the remote config is not available
-    required Map<String, dynamic> paywallFallback,
+    required ConfigPaywall paywallFallback,
     QLaunchMode launchMode = QLaunchMode.subscriptionManagement,
     bool enableSearchAds = false,
     bool isDesignMode = false,
@@ -74,43 +72,47 @@ class Paywalls {
       othersConfigs();
     }
 
+    try {
+      final Map<String, QProduct> products = await Qonversion.getSharedInstance().products();
+      paywallService.products = products;
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
     // get remote configs
     updateRemoteConfigs(isDesignMode: Platform.isAndroid || Platform.isIOS ? isDesignMode : true);
   }
 
   /// Get the paywall widget
-  static Widget getPaywall({bool isDesignMode = false, Map<String, dynamic>? data}) {
-    updateRemoteConfigs(isDesignMode: isDesignMode);
+  static Widget getPaywall({bool isDesignMode = false, ConfigPaywall? data}) {
+    updateRemoteConfigs(isDesignMode: isDesignMode, data: data);
     return Paywall();
   }
 
   // get remote configs
-  static updateRemoteConfigs({bool isDesignMode = false, Map<String, dynamic>? data}) async {
-    debugPrint("updateRemoteConfigs");
+  static updateRemoteConfigs({bool isDesignMode = false, ConfigPaywall? data}) async {
+    debugPrint("updateRemoteConfigs $isDesignMode $data");
 
     if (isDesignMode) {
-      paywallService.box.write('remoteConfig', jsonEncode(data ?? _paywallFallback));
-      paywallService.setQRemoteConfig();
+      paywallService.setQRemoteConfig(data ?? _paywallFallback);
       return;
-    }
+    } else {
+      if (Platform.isAndroid || Platform.isIOS) {
+        try {
+          final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
 
-    final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
+          if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
+            final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
 
-    try {
-      if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
-        final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
-
-        paywallService.box.write('remoteConfig', jsonEncode(paywallRemote));
-        paywallService.setQRemoteConfig();
-      } else {
-        paywallService.box.write('remoteConfig', jsonEncode(remoteConfig.payload));
-        paywallService.setQRemoteConfig();
+            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote));
+          } else {
+            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload));
+          }
+        } catch (e) {
+          debugPrint(e.toString());
+          paywallService.setQRemoteConfig(_paywallFallback);
+        }
       }
-    } catch (e) {
-      debugPrint(e.toString());
-
-      paywallService.box.write('remoteConfig', jsonEncode(_paywallFallback));
-      paywallService.setQRemoteConfig();
     }
   }
 
@@ -146,19 +148,21 @@ class Paywalls {
   }
 
   /// Purchase a product
-  static Future<void> purchase(String productId, Function? showUserCancel) async {
+  static Future<void> purchase(String productId, {Function? showUserCancel}) async {
+    paywallService.isLoading = true;
     try {
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().purchase(productId);
-
       final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
 
       if (premium != null && premium.isActive) {
+        paywallService.isLoading = false;
         switch (premium.renewState) {
           case QEntitlementRenewState.willRenew:
           case QEntitlementRenewState.nonRenewable:
             // .willRenew is the state of an auto-renewable subscription
             // .nonRenewable is the state of consumable/non-consumable IAPs that could unlock lifetime access
             Get.find<PaywallService>().isPremiumUser = true;
+            Get.back();
             break;
           case QEntitlementRenewState.billingIssue:
             // Grace period: entitlement is active, but there was some billing issue.
@@ -174,6 +178,7 @@ class Paywalls {
         }
       }
     } on QPurchaseException catch (e) {
+      paywallService.isLoading = false;
       if (e.isUserCancelled) {
         // Purchase canceled by the user
         if (showUserCancel != null) {
@@ -189,9 +194,11 @@ class Paywalls {
   // restore purchases
   static Future<bool> restorePurchases() async {
     try {
+      paywallService.isLoading = true;
       final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().restore();
       final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
       if (premium != null && premium.isActive) {
+        paywallService.isLoading = false;
         switch (premium.renewState) {
           case QEntitlementRenewState.willRenew:
           case QEntitlementRenewState.nonRenewable:
@@ -214,6 +221,7 @@ class Paywalls {
       }
       return false;
     } catch (e) {
+      paywallService.isLoading = false;
       debugPrint(e.toString());
       return false;
     }

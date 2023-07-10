@@ -1,57 +1,52 @@
-﻿import 'dart:convert';
-
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:json_dynamic_widget/json_dynamic_widget.dart';
 
 import '../../dynamic_paywalls.dart';
 
 class PaywallService extends GetxService {
+  final _configPaywall = ConfigPaywall(
+    layoutPaywall: LayoutPaywall(
+      model: "one_product",
+      args: {},
+    ),
+  ).obs;
+
+  final Map<String, QProduct> _products = <String, QProduct>{}.obs;
+
   final _isLoading = false.obs;
   final _isPremiumUser = false.obs;
-  final registry = JsonWidgetRegistry.instance;
-  final widget = Rxn<JsonWidgetData?>();
   final _qRemoteConfig = Rxn<QRemoteConfig>();
+  final _operationStatus = false.obs;
 
-  final Map loadingData = {
-    "type": "scaffold",
-    "args": {
-      "body": {
-        "type": "center",
-        "child": {"type": "circular_progress_indicator"}
-      }
-    }
-  };
   late final GetStorage box;
+
+  Map<String, QProduct> get products => _products;
+  set products(Map<String, QProduct> value) => {_products.clear(), _products.addAll(value)};
 
   bool get isLoading => _isLoading.value;
   set isLoading(bool value) => _isLoading.value = value;
 
-  bool get isPremiumUser => _isPremiumUser.value;
-  set isPremiumUser(bool value) => _isPremiumUser.value = value;
+  bool get isPremiumUser => box.read("isPremiumUser") ?? false;
+  set isPremiumUser(bool value) => (_isPremiumUser.value = value, box.write("isPremiumUser", value));
 
-  JsonWidgetData? get widgetData => widget.value;
-  set widgetData(JsonWidgetData? value) => widget.value = value;
+  bool get operationStatus => _operationStatus.value;
+  set operationStatus(bool value) => _operationStatus.value = value;
+
+  ConfigPaywall get configPaywall => _configPaywall.value;
+  set configPaywall(ConfigPaywall value) => _configPaywall.value = value;
 
   QRemoteConfig? get qRemoteConfig => _qRemoteConfig.value;
 
-  setQRemoteConfig() {
-    final payload = jsonDecode(box.read("remoteConfig"));
-
-    if (payload != null && payload.toString() != "{}") {
-      isLoading = false;
-      widgetData = JsonWidgetData.fromDynamic(payload);
-    } else {
-      isLoading = false;
-      widgetData = JsonWidgetData.fromDynamic(loadingData);
-    }
+  setQRemoteConfig(ConfigPaywall payload) {
+    //final payload = jsonDecode(box.read("remoteConfig"));
+    configPaywall = payload;
   }
 
   Future<PaywallService> init() async {
     box = GetStorage("dynamic_paywalls");
+    box.writeIfNull("isPremiumUser", false);
 
-    box.writeIfNull("remoteConfig", "{}");
-    widgetData = JsonWidgetData.fromDynamic(loadingData);
+    configPaywall = loadingLayout;
 
     return this;
   }
