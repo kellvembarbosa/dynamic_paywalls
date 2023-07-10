@@ -14,7 +14,7 @@ class PaywallService extends GetxService {
   final Map<String, QProduct> _products = <String, QProduct>{}.obs;
 
   final _isLoading = false.obs;
-  final _isPremiumUser = false.obs;
+  final isPremiumUserListen = false.obs;
   final _qRemoteConfig = Rxn<QRemoteConfig>();
   final _operationStatus = false.obs;
 
@@ -27,7 +27,7 @@ class PaywallService extends GetxService {
   set isLoading(bool value) => _isLoading.value = value;
 
   bool get isPremiumUser => box.read("isPremiumUser") ?? false;
-  set isPremiumUser(bool value) => (_isPremiumUser.value = value, box.write("isPremiumUser", value));
+  set isPremiumUser(bool value) => (isPremiumUserListen.value = value, box.write("isPremiumUser", value));
 
   bool get operationStatus => _operationStatus.value;
   set operationStatus(bool value) => _operationStatus.value = value;
