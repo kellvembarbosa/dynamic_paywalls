@@ -139,8 +139,17 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                     },
                   ).center(),
                   <Widget>[
-                    const Text("Privacy").textStyle(const TextStyle(decoration: TextDecoration.underline)).fontSize(12).gestures(
-                          onTap: () => _launchUrl(Uri.parse(data["openPrivacyLink"])),
+                    const Text("Privacy")
+                        .textStyle(
+                          const TextStyle(
+                            decoration: TextDecoration.underline,
+                          ),
+                        )
+                        .fontSize(12)
+                        .gestures(
+                          onTap: () => _launchUrl(
+                            Uri.parse(data["openPrivacyLink"]),
+                          ),
                         ),
                     const SizedBox(width: 4),
                     const Text("and").fontSize(12).fontWeight(FontWeight.w300),
@@ -154,9 +163,14 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                         mainAxisAlignment: MainAxisAlignment.center,
                       )
                       .opacity(0.5)
-                      .padding(bottom: 12)
+                      .padding(vertical: 12)
                       .safeArea(bottom: true, top: false),
-                ].toColumn(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.start).padding(
+                ]
+                    .toColumn(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                    )
+                    .padding(
                       left: 32,
                       right: 32,
                     ),
