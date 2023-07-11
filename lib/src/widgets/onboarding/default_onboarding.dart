@@ -102,9 +102,11 @@ class _DefaultOnboardingState extends State<DefaultOnboarding> with BaseOnboardi
 class OnboardingItem {
   final String title;
   final String subtitle;
-  final String image;
+  final String? image;
+  final Widget? child;
 
-  const OnboardingItem({required this.title, required this.subtitle, required this.image});
+  // add assert if image is null child mast not be null and vice versa
+  const OnboardingItem({required this.title, required this.subtitle, this.image, this.child}) : assert(image != null || child != null);
 }
 
 class _OnboardingItemWidget extends StatelessWidget {
@@ -116,31 +118,33 @@ class _OnboardingItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final styleOnboarding = data["styleOnboarding"];
     final contentPaddingHoriontal = styleOnboarding["contentPaddingHoriontal"];
-    final borderRadius = styleOnboarding["borderRadius"];
     final titlecolor = HexColor(styleOnboarding["ItemTextTitleColor"]);
     final subtitleColor = HexColor(styleOnboarding["ItemTextSubtitleColor"]);
     final titleFontSize = styleOnboarding["ItemTextTitleFontSize"];
     final subtitleFontSize = styleOnboarding["ItemTextSubtitleFontSize"];
+
+    Widget child = item.child ?? const SizedBox.shrink();
+
+    Widget image = item.image != null
+        ? item.image!.contains("http")
+            ? CachedNetworkImage(
+                imageUrl: item.image!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ).expanded()
+            : Image.asset(
+                item.image!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+              ).expanded()
+        : const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: contentPaddingHoriontal),
       child: Column(
         children: [
-          if (item.image.contains("http"))
-            CachedNetworkImage(
-              imageUrl: item.image,
-              width: double.infinity,
-              fit: BoxFit.contain,
-            ).expanded()
-          else
-            Image.asset(
-              item.image,
-              width: double.infinity,
-              fit: BoxFit.contain,
-            ).expanded().clipRRect(
-                  all: borderRadius,
-                ),
+          if (item.image == null && item.child != null) child else image,
           Text(
             item.title,
             style: TextStyle(

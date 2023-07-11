@@ -105,13 +105,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () => Get.to(
                         () => DefaultOnboarding(
                           currentStep: 0,
-                          items: const [
+                          items: [
                             OnboardingItem(
                               title: "Online Shopping",
                               subtitle: "You can shopping anytime, \nanywhere",
-                              image: "https://picsum.photos/seed/1/200/300",
+                              child: Expanded(
+                                child: Image.network(
+                                  "https://source.unsplash.com/random/?pregrancy",
+                                ),
+                              ),
                             ),
-                            OnboardingItem(
+                            const OnboardingItem(
                               title: "Detailed Recipes",
                               subtitle: "You can shopping anytime, \nanywhere",
                               image: "https://picsum.photos/seed/1/200/300",
