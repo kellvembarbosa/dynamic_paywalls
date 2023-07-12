@@ -12,9 +12,6 @@ extension StringExtension on String {
     result = result.replaceAll('@pricePerWeek', product.pricePerWeek);
     result = result.replaceAll('@pricePerMonth', product.pricePerMonth);
     result = result.replaceAll('@pricePerYear', product.pricePerYear);
-    result = result.replaceAll('@pricePerDay', product.pricePerDay);
-    result = result.replaceAll('@pricePerMonth', product.pricePerMonth);
-    result = result.replaceAll('@pricePerYear', product.pricePerYear);
     result = result.replaceAll('@rawPrice', product.rawPrice);
     result = result.replaceAll('@periodInDays', product.periodInDays);
     result = result.replaceAll('@periodInWeeks', product.periodInWeeks);
@@ -63,23 +60,23 @@ extension QProductExtension on QProduct {
       return '';
     }
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return "$price";
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return ((price ?? 0) / 4).toStringAsFixed(2);
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return ((price ?? 0) / 12).toStringAsFixed(2);
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return ((price ?? 0) / 24).toStringAsFixed(2);
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return (price ?? 0 / 52).toStringAsFixed(2);
     }
 
@@ -95,23 +92,23 @@ extension QProductExtension on QProduct {
       return '';
     }
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return ((price ?? 0) * 4).toStringAsFixed(2);
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return "$price";
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return ((price ?? 0) / 3).toStringAsFixed(2);
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return ((price ?? 0) / 6).toStringAsFixed(2);
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return ((price ?? 0) / 12).toStringAsFixed(2);
     }
 
@@ -126,23 +123,23 @@ extension QProductExtension on QProduct {
       return '';
     }
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return ((price ?? 0) * 52).toStringAsFixed(2);
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return ((price ?? 0) * 12).toStringAsFixed(2);
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return ((price ?? 0) * 4).toStringAsFixed(2);
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return ((price ?? 0) * 2).toStringAsFixed(2);
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return "$price";
     }
 
@@ -157,23 +154,23 @@ extension QProductExtension on QProduct {
       return '';
     }
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return ((price ?? 0) / 7).toStringAsFixed(2);
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return ((price ?? 0) / 30).toStringAsFixed(2);
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return ((price ?? 0) / 90).toStringAsFixed(2);
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return ((price ?? 0) / 180).toStringAsFixed(2);
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return ((price ?? 0) / 365).toStringAsFixed(2);
     }
 
@@ -193,23 +190,23 @@ extension QProductExtension on QProduct {
   String get periodInDays {
     final period = durationString;
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return '7';
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return '30';
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return '90';
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return '180';
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return '365';
     }
 
@@ -220,23 +217,23 @@ extension QProductExtension on QProduct {
   String get periodInWeeks {
     final period = durationString;
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return '1';
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return '4';
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return '12';
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return '24';
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return '52';
     }
 
@@ -247,23 +244,23 @@ extension QProductExtension on QProduct {
   String get periodInMonths {
     final period = durationString;
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return '0.25';
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return '1';
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return '3';
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return '6';
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return '12';
     }
 
@@ -274,23 +271,23 @@ extension QProductExtension on QProduct {
   String get periodInYears {
     final period = durationString;
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return '0.0192308';
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return '0.0833333';
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return '0.25';
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return '0.5';
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return '1';
     }
 
@@ -301,23 +298,23 @@ extension QProductExtension on QProduct {
   String get periodInAlt {
     final period = durationString;
 
-    if (period == 'weekly') {
+    if (period == 'week') {
       return 'week';
     }
 
-    if (period == 'monthly') {
+    if (period == 'month') {
       return 'month';
     }
 
-    if (period == '3Months') {
+    if (period == '3 months') {
       return '3 months';
     }
 
-    if (period == '6Months') {
+    if (period == '6 months') {
       return '6 months';
     }
 
-    if (period == 'annual') {
+    if (period == 'year') {
       return 'year';
     }
 
