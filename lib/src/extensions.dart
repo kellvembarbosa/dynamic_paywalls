@@ -9,6 +9,7 @@ extension StringExtension on String {
     }
 
     result = result.replaceAll('@period', product.durationString);
+    result = result.replaceAll('@pricePerDay', product.pricePerDay);
     result = result.replaceAll('@pricePerWeek', product.pricePerWeek);
     result = result.replaceAll('@pricePerMonth', product.pricePerMonth);
     result = result.replaceAll('@pricePerYear', product.pricePerYear);
