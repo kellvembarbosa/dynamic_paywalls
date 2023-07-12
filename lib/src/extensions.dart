@@ -8,7 +8,6 @@ extension StringExtension on String {
       return result;
     }
 
-    result = result.replaceAll('@price', product.prettyPrice ?? '');
     result = result.replaceAll('@period', product.durationString);
     result = result.replaceAll('@pricePerWeek', product.pricePerWeek);
     result = result.replaceAll('@pricePerMonth', product.pricePerMonth);
@@ -26,6 +25,7 @@ extension StringExtension on String {
     result = result.replaceAll('@trialPeriodInWeeks', product.trialPeriodInWeeks);
     result = result.replaceAll('@trialPeriodInMonths', product.trialPeriodInMonths);
     result = result.replaceAll('@trialPeriodInText', product.trialPeriodInText);
+    result = result.replaceAll('@price', product.prettyPrice ?? '');
 
     result = result.replaceAll('@currencyCode', product.currencyCode ?? '');
     result = result.replaceAll('@currencySymbol', product.currencySymbol);
