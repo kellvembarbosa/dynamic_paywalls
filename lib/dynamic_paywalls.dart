@@ -13,4 +13,3 @@ export 'src/models/config_paywall.dart';
 export 'src/constants.dart';
 
 // export packages
-export 'package:qonversion_flutter/qonversion_flutter.dart';

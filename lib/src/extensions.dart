@@ -27,6 +27,7 @@ extension StringExtension on String {
 
     result = result.replaceAll('@currencyCode', product.currencyCode ?? '');
     result = result.replaceAll('@currencySymbol', product.currencySymbol);
+
     return result;
   }
 }

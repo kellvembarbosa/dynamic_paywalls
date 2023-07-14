@@ -38,21 +38,19 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
       "btnSecondaryText": "Free 3-day trial, then @price/@period",
       "openTermsLink": "https://help.knksolutions.pt/newipe-eula/",
       "openPrivacyLink": "https://help.knksolutions.pt/newipe-privacy/",
-      "stylePaywall": {
-        "starColor": "#FFC107",
-        "backgroundColor": "#ffffff",
-        "titleColor": "#000000",
-        "descriptionColor": "#000000",
-        "priceColor": "#000000",
-        "btnBackground": "#FFC107",
-        "btnTextColor": "#ffffff",
-        "btnTextSize": 16.0,
-        "btnSecondaryTextColor": "#ffffff",
-        "btnSecondaryTextSize": 10.0,
-        "purchaseDrawerBackgroundColor": "#ffffff",
-        "purchaseDrawerCornerRadius": 32.0,
-        "btnCloseColor": "#000000",
-      }
+      "starColor": "#FFC107",
+      "backgroundColor": "#ffffff",
+      "titleColor": "#000000",
+      "descriptionColor": "#000000",
+      "priceColor": "#000000",
+      "btnBackground": "#FFC107",
+      "btnTextColor": "#ffffff",
+      "btnTextSize": 16.0,
+      "btnSecondaryTextColor": "#ffffff",
+      "btnSecondaryTextSize": 10.0,
+      "purchaseDrawerBackgroundColor": "#ffffff",
+      "purchaseDrawerCornerRadius": 32.0,
+      "btnCloseColor": "#000000",
     });
 
     setData(widget.configPaywall.layoutPaywall.args);
@@ -91,7 +89,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
             children: [
               BtnCloseOneWidget(
                 showBtnCloseTimer: showBtnCloseTimer,
-                btnCloseColor: HexColor(data["stylePaywall"]["btnCloseColor"]),
+                btnCloseColor: HexColor(data["btnCloseColor"]),
                 onPaywallClose: widget.configPaywall.onPaywallClose,
               ),
               const Spacer(),
@@ -100,7 +98,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                 child: <Widget>[
                   SocialProofStarsWidget({
                     "rating": data["rating"],
-                    "starColor": data["stylePaywall"]["starColor"],
+                    "starColor": data["starColor"],
                   }),
                   Text(
                     data["title"].toString().replaceVariablesProduct(product: products[data["product_id"]]),
@@ -122,12 +120,12 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(data["btnText"].toString().replaceVariablesProduct(product: products[data["product_id"]]))
-                            .fontSize(data["stylePaywall"]["btnTextSize"])
-                            .textColor(HexColor(data["stylePaywall"]["btnTextColor"]))
+                            .fontSize(data["btnTextSize"])
+                            .textColor(HexColor(data["btnTextColor"]))
                             .fontWeight(FontWeight.w600),
                         Text(data["btnSecondaryText"].toString().replaceVariablesProduct(product: products[data["product_id"]]))
-                            .fontSize(data["stylePaywall"]["btnSecondaryTextSize"])
-                            .textColor(HexColor(data["stylePaywall"]["btnSecondaryTextColor"])),
+                            .fontSize(data["btnSecondaryTextSize"])
+                            .textColor(HexColor(data["btnSecondaryTextColor"])),
                       ],
                     ),
                   ).width(width * 0.8).padding(vertical: 12).backgroundColor(Colors.blue).clipRRect(all: 12).gestures(
@@ -174,9 +172,9 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                       left: 32,
                       right: 32,
                     ),
-              ).backgroundColor(HexColor(data["stylePaywall"]["purchaseDrawerBackgroundColor"])).clipRRect(
-                    topLeft: data["stylePaywall"]["purchaseDrawerCornerRadius"],
-                    topRight: data["stylePaywall"]["purchaseDrawerCornerRadius"],
+              ).backgroundColor(HexColor(data["purchaseDrawerBackgroundColor"])).clipRRect(
+                    topLeft: data["purchaseDrawerCornerRadius"],
+                    topRight: data["purchaseDrawerCornerRadius"],
                   ),
             ],
           ),

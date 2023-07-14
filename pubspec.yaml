@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  qonversion_flutter: ^6.1.1
   get: ^4.6.5
   get_storage: ^2.1.1
   json_editor: ^0.0.8
@@ -21,6 +20,8 @@ dependencies:
   url_launcher: ^6.1.12
   animate_do: ^3.0.2
   collection: ^1.17.1
+  purchases_flutter: ^5.3.0
+  glassfy_flutter: ^1.5.2
 
 dev_dependencies:
   flutter_test:
