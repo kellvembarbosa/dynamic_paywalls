@@ -1,53 +1,28 @@
 ﻿import 'dart:io';
 
 import 'package:dynamic_paywalls/dynamic_paywalls.dart';
-import 'package:dynamic_paywalls/src/repositories/paywall_connect.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:glassfy_flutter/glassfy_flutter.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class Paywalls {
   static late final CustomConfig? _customConfig;
   static late final PaywallService paywallService;
   static late final ConfigPaywall _paywallFallback;
-  static final PaywallConnect _paywallConnect = PaywallConnect();
-  static late final String _paywallUrl;
   static bool _isInitialized = false; // Variável para rastrear se o init() já foi chamado
 
   Paywalls._internal();
 
   /// Initialize Qonversion SDK
-  /// ```
-  /// await Paywalls.init(
-  ///   projectKey: "YOUR_PROJECT_KEY",
-  ///   paywallUrl: "https://YOUR_PAYWALL_URL",
-  ///   paywallFallback: ConfigPaywall(
-  ///     layoutPaywall: LayoutPaywall(
-  ///     model: "one_product",
-  ///     args: {},
-  ///   ),
-  ///   launchMode: QLaunchMode.subscriptionManagement,
-  ///   enableSearchAds: true,
-  ///   environment: QEnvironment.production,
-  ///   othersConfigs: () {
-  ///     // Add your configs here
-  ///     debugPrint("executou othersConfigs");
-  ///   },
-  /// );
-  ///
-  /// ```
   static init({
-    required String projectKey,
-
-    /// The paywall url to be used if the remote config is available
-    required String paywallUrl,
-
-    /// The fallback paywall to be used if the remote config is not available
-    required ConfigPaywall paywallFallback,
-    QLaunchMode launchMode = QLaunchMode.subscriptionManagement,
+    String iOSRevenueCatApiKey = "",
+    String androidRevenueCatApiKey = "",
+    required String glassfyApiKey,
     bool enableSearchAds = false,
     bool isDesignMode = false,
-    QEnvironment environment = QEnvironment.production,
     CustomConfig? customConfig,
     Function? othersConfigs,
   }) async {
@@ -68,43 +43,36 @@ class Paywalls {
       paywallService = Get.find();
     }
 
-    // Start Qonversion SDK
-    final config = QonversionConfigBuilder(projectKey, launchMode).setEnvironment(environment).build();
-    Qonversion.initialize(config);
+    // Start RevenueCat SDK
+    late PurchasesConfiguration purchasesConfiguration;
+    if (Platform.isAndroid) {
+      purchasesConfiguration = PurchasesConfiguration(androidRevenueCatApiKey);
+    } else {
+      purchasesConfiguration = PurchasesConfiguration(iOSRevenueCatApiKey);
+    }
+
+    await Purchases.configure(purchasesConfiguration);
+
+    // Start Glassfy SDK
+    await Glassfy.initialize(glassfyApiKey, watcherMode: true);
 
     // Enable Search Ads
     if (enableSearchAds) {
-      Qonversion.getSharedInstance().collectAppleSearchAdsAttribution();
+      Purchases.enableAdServicesAttributionTokenCollection();
     }
 
     // Custom configs
     _customConfig = customConfig;
 
-    // Paywall url
-    _paywallUrl = paywallUrl;
-
-    // Paywall fallback
-    _paywallFallback = paywallFallback;
-
     // Others configs
     if (othersConfigs != null) {
       othersConfigs();
     }
-
-    try {
-      final Map<String, QProduct> products = await Qonversion.getSharedInstance().products();
-      paywallService.products = products;
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-
-    // get remote configs
-    updateRemoteConfigs(isDesignMode: Platform.isAndroid || Platform.isIOS ? isDesignMode : true);
   }
 
   /// Get the paywall widget
   static Widget getPaywall({bool isDesignMode = false, ConfigPaywall? data, required Function onPaywallClose}) {
-    updateRemoteConfigs(isDesignMode: isDesignMode, data: data, onPaywallClose: onPaywallClose);
+    //updateRemoteConfigs(isDesignMode: isDesignMode, data: data, onPaywallClose: onPaywallClose);
     return Paywall();
   }
 
@@ -113,24 +81,24 @@ class Paywalls {
     debugPrint("updateRemoteConfigs $isDesignMode $data");
 
     if (isDesignMode) {
-      paywallService.setQRemoteConfig(data ?? _paywallFallback);
+      // paywallService.setQRemoteConfig(data ?? _paywallFallback);
       return;
     } else {
       if (Platform.isAndroid || Platform.isIOS) {
-        try {
-          final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
+        // try {
+        //   final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
 
-          if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
-            final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
+        //   if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
+        //     final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
 
-            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote, onPaywallClose: onPaywallClose));
-          } else {
-            paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload, onPaywallClose: onPaywallClose));
-          }
-        } catch (e) {
-          debugPrint(e.toString());
-          paywallService.setQRemoteConfig(_paywallFallback);
-        }
+        //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote, onPaywallClose: onPaywallClose));
+        //   } else {
+        //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload, onPaywallClose: onPaywallClose));
+        //   }
+        // } catch (e) {
+        //   debugPrint(e.toString());
+        //   paywallService.setQRemoteConfig(_paywallFallback);
+        // }
       }
     }
   }
@@ -138,74 +106,33 @@ class Paywalls {
   /// Check if the user is a premium user
   static Future<void> checkPermissions() async {
     try {
-      final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().checkEntitlements();
-      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
-      if (premium != null && premium.isActive) {
-        switch (premium.renewState) {
-          case QEntitlementRenewState.willRenew:
-          case QEntitlementRenewState.nonRenewable:
-            // .willRenew is the state of an auto-renewable subscription
-            // .nonRenewable is the state of consumable/non-consumable IAPs that could unlock lifetime access
-            Get.find<PaywallService>().isPremiumUser = true;
-            break;
-          case QEntitlementRenewState.billingIssue:
-            // Grace period: entitlement is active, but there was some billing issue.
-            // Prompt the user to update the payment method.
-            break;
-          case QEntitlementRenewState.canceled:
-            // The user has turned off auto-renewal for the subscription, but the subscription has not expired yet.
-            // Prompt the user to resubscribe with a special offer.
-            Get.find<PaywallService>().isPremiumUser = false;
-            break;
-          default:
-            break;
-        }
+      final customerInfo = await Purchases.getCustomerInfo();
+
+      if (customerInfo.entitlements.all["premium"]?.isActive == true) {
+        paywallService.isPremiumUser = true;
+      } else {
+        paywallService.isPremiumUser = false;
       }
-    } catch (e) {
-      debugPrint(e.toString());
+    } on PlatformException catch (e) {
+      // Error fetching customer info
+      debugPrint("Error fetching customer info: $e");
+      paywallService.isPremiumUser = false;
     }
   }
 
   /// Purchase a product
-  static Future<void> purchase(String productId, Function onPaywallClose, {Function? showUserCancel}) async {
+  static Future<void> purchase(Package package, Function onPaywallClose, {Function? showUserCancel}) async {
     paywallService.isLoading = true;
     try {
-      final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().purchase(productId);
-      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
-
-      if (premium != null && premium.isActive) {
-        paywallService.isLoading = false;
-        switch (premium.renewState) {
-          case QEntitlementRenewState.willRenew:
-          case QEntitlementRenewState.nonRenewable:
-            // .willRenew is the state of an auto-renewable subscription
-            // .nonRenewable is the state of consumable/non-consumable IAPs that could unlock lifetime access
-            Get.find<PaywallService>().isPremiumUser = true;
-            onPaywallClose.call();
-            break;
-          case QEntitlementRenewState.billingIssue:
-            // Grace period: entitlement is active, but there was some billing issue.
-            // Prompt the user to update the payment method.
-            break;
-          case QEntitlementRenewState.canceled:
-            // The user has turned off auto-renewal for the subscription, but the subscription has not expired yet.
-            // Prompt the user to resubscribe with a special offer.
-            Get.find<PaywallService>().isPremiumUser = false;
-            break;
-          default:
-            break;
-        }
+      final purchaserInfo = await Purchases.purchasePackage(package);
+      if (purchaserInfo.entitlements.all["premium"]?.isActive == true) {
+        paywallService.isPremiumUser = true;
+      } else {
+        paywallService.isPremiumUser = false;
       }
-    } on QPurchaseException catch (e) {
+      onPaywallClose.call();
+    } on PlatformException catch (e) {
       paywallService.isLoading = false;
-      if (e.isUserCancelled) {
-        // Purchase canceled by the user
-        if (showUserCancel != null) {
-          showUserCancel();
-        }
-        return;
-      }
-
       debugPrint(e.toString());
     }
   }
@@ -214,100 +141,47 @@ class Paywalls {
   static Future<bool> restorePurchases() async {
     try {
       paywallService.isLoading = true;
-      final Map<String, QEntitlement> entitlements = await Qonversion.getSharedInstance().restore();
-      final premium = entitlements[_customConfig?.entitlements ?? 'premium'];
-      if (premium != null && premium.isActive) {
-        paywallService.isLoading = false;
-        switch (premium.renewState) {
-          case QEntitlementRenewState.willRenew:
-          case QEntitlementRenewState.nonRenewable:
-            // .willRenew is the state of an auto-renewable subscription
-            // .nonRenewable is the state of consumable/non-consumable IAPs that could unlock lifetime access
-            Get.find<PaywallService>().isPremiumUser = true;
-            return true;
-          case QEntitlementRenewState.billingIssue:
-            // Grace period: entitlement is active, but there was some billing issue.
-            // Prompt the user to update the payment method.
-            return false;
-          case QEntitlementRenewState.canceled:
-            // The user has turned off auto-renewal for the subscription, but the subscription has not expired yet.
-            // Prompt the user to resubscribe with a special offer.
-            Get.find<PaywallService>().isPremiumUser = false;
-            return false;
-          default:
-            return false;
-        }
-      }
-      return false;
-    } catch (e) {
+      CustomerInfo customerInfo = await Purchases.restorePurchases();
       paywallService.isLoading = false;
-      debugPrint(e.toString());
+      if (customerInfo.entitlements.all["premium"]?.isActive == true) {
+        paywallService.isPremiumUser = true;
+        return true;
+      } else {
+        paywallService.isPremiumUser = false;
+        return false;
+      }
+    } on PlatformException catch (e) {
+      // Error restoring purchases
+      debugPrint("Error restoring purchases: $e");
+      paywallService.isLoading = false;
       return false;
     }
   }
 
-  /// Get QonversionId
-  static Future<String?> getQonversionId() async {
+  /// Get RevenueCat Id
+  static Future<String?> getRevenueCatId() async {
     try {
-      final userInfo = await Qonversion.getSharedInstance().userInfo();
-      return userInfo.qonversionId;
+      final userInfo = await Purchases.appUserID;
+      return userInfo;
     } catch (e) {
       debugPrint(e.toString());
       return null;
-    }
-  }
-
-  // Get identityId
-  static Future<String?> getIdentityId() async {
-    try {
-      final userInfo = await Qonversion.getSharedInstance().userInfo();
-      return userInfo.identityId;
-    } catch (e) {
-      debugPrint(e.toString());
-      return null;
-    }
-  }
-
-  // set Identify id
-  static Future<void> setUserId(String userId) async {
-    try {
-      await Qonversion.getSharedInstance().identify(userId);
-    } catch (e) {
-      debugPrint(e.toString());
     }
   }
 
   // set customUserId property
   static Future<void> setUserProperty(String key, String value) async {
     try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.customUserId, value);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  // set email property
-  static Future<void> setEmail(String email) async {
-    try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.email, email);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  // set name property
-  static Future<void> setName(String name) async {
-    try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.name, name);
+      await Purchases.setAttributes({key: value});
     } catch (e) {
       debugPrint(e.toString());
     }
   }
 
   // set facebook property
-  static Future<void> setFacebook(String facebook) async {
+  static Future<void> setFacebook(String anonymousIDfacebook) async {
     try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.facebookAttribution, facebook);
+      await Purchases.setFBAnonymousID(anonymousIDfacebook);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -316,7 +190,7 @@ class Paywalls {
   // set appsFlyerUserId property
   static Future<void> setAppsFlyerUserId(String appsFlyerUserId) async {
     try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.appsFlyerUserId, appsFlyerUserId);
+      await Purchases.setAppsflyerID(appsFlyerUserId);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -325,7 +199,7 @@ class Paywalls {
   // set firebaseUserId property
   static Future<void> setFirebaseUserId(String firebaseUserId) async {
     try {
-      await Qonversion.getSharedInstance().setProperty(QUserProperty.firebaseAppInstanceId, firebaseUserId);
+      await Purchases.setFirebaseAppInstanceId(firebaseUserId);
     } catch (e) {
       debugPrint(e.toString());
     }

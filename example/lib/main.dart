@@ -15,12 +15,9 @@ void main() async {
 
   // Initialize Qonversion SDK
   await Paywalls.init(
-    projectKey: 'Agy3OwEMnl2dt7RENVHxsdaJcRVLuajZ',
-    paywallUrl: 'https://dash.newipe.com/assets/038e9263-5990-4e21-bf49-21fd8c705d61',
-    paywallFallback: loadingLayout,
-    launchMode: QLaunchMode.subscriptionManagement,
+    iOSRevenueCatApiKey: 'Agy3OwEMnl2dt7RENVHxsdaJcRVLuajZ',
+    glassfyApiKey: "ad76a2f6ff6e4b9b802ab65a50f73234",
     enableSearchAds: true,
-    environment: QEnvironment.sandbox,
     isDesignMode: Platform.isAndroid || Platform.isIOS ? false : true,
     othersConfigs: () {
       // Add your configs here

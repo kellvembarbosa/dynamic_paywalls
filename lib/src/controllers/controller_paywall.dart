@@ -1,5 +1,6 @@
 ﻿import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../../dynamic_paywalls.dart';
 
@@ -11,17 +12,15 @@ class PaywallService extends GetxService {
     ),
   ).obs;
 
-  final Map<String, QProduct> _products = <String, QProduct>{}.obs;
+  final _offerings = Rx<Offerings?>(null);
 
   final _isLoading = false.obs;
   final isPremiumUserListen = false.obs;
-  final _qRemoteConfig = Rxn<QRemoteConfig>();
   final _operationStatus = false.obs;
 
   late final GetStorage box;
 
-  Map<String, QProduct> get products => _products;
-  set products(Map<String, QProduct> value) => {_products.clear(), _products.addAll(value)};
+  Offerings? get offerings => _offerings.value;
 
   bool get isLoading => _isLoading.value;
   set isLoading(bool value) => _isLoading.value = value;
@@ -35,12 +34,7 @@ class PaywallService extends GetxService {
   ConfigPaywall get configPaywall => _configPaywall.value;
   set configPaywall(ConfigPaywall value) => _configPaywall.value = value;
 
-  QRemoteConfig? get qRemoteConfig => _qRemoteConfig.value;
-
-  setQRemoteConfig(ConfigPaywall payload) {
-    //final payload = jsonDecode(box.read("remoteConfig"));
-    configPaywall = payload;
-  }
+  setOfferings(Offerings? value) => _offerings.value = value;
 
   Future<PaywallService> init() async {
     box = GetStorage("dynamic_paywalls");

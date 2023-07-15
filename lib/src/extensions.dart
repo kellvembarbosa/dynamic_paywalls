@@ -1,7 +1,69 @@
-﻿import 'package:dynamic_paywalls/dynamic_paywalls.dart';
+﻿import 'package:intl/intl.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+
+extension MinutesToDuration on int {
+  Duration toDuration() {
+    return Duration(seconds: this);
+  }
+}
+
+extension FormatDuration on Duration {
+  String format() {
+    final minutes = inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+}
+
+extension DurationToFormattedDate on Duration {
+  String formatToDate() {
+    final now = DateTime.now();
+    final targetDateTime = now.add(this);
+    final formatter = DateFormat('dd/MM/yyyy');
+    return formatter.format(targetDateTime);
+  }
+}
+
+extension FormatDate on DateTime {
+  String formatDate(String format) {
+    final formatter = DateFormat(format);
+    return formatter.format(this);
+  }
+}
+
+extension IndexedIterable<E> on Iterable<E> {
+  Iterable<T> mapIndexed<T>(T Function(E e, int i) f) {
+    var i = 0;
+    return map((e) => f(e, i++));
+  }
+}
+
+extension MyDateUtils on DateTime {
+  DateTime copyWith({
+    int? year,
+    int? month,
+    int? day,
+    int? hour,
+    int? minute,
+    int? second,
+    int? millisecond,
+    int? microsecond,
+  }) {
+    return DateTime(
+      year ?? this.year,
+      month ?? this.month,
+      day ?? this.day,
+      hour ?? this.hour,
+      minute ?? this.minute,
+      second ?? this.second,
+      millisecond ?? this.millisecond,
+      microsecond ?? this.microsecond,
+    );
+  }
+}
 
 extension StringExtension on String {
-  String replaceVariablesProduct({required QProduct? product}) {
+  String replaceVariablesProduct({required Package? product}) {
     var result = this;
 
     if (product == null) {
@@ -19,35 +81,39 @@ extension StringExtension on String {
     result = result.replaceAll('@periodInMonths', product.periodInMonths);
     result = result.replaceAll('@periodInYears', product.periodInYears);
     result = result.replaceAll('@periodInAlt', product.periodInAlt);
-    result = result.replaceAll('@trialPeriodInDays', product.trialPeriodInDays);
-    result = result.replaceAll('@trialPeriodInWeeks', product.trialPeriodInWeeks);
-    result = result.replaceAll('@trialPeriodInMonths', product.trialPeriodInMonths);
-    result = result.replaceAll('@trialPeriodInText', product.trialPeriodInText);
-    result = result.replaceAll('@price', product.prettyPrice ?? '');
+    // result = result.replaceAll('@trialPeriodInDays', product.trialPeriodInDays);
+    // result = result.replaceAll('@trialPeriodInWeeks', product.trialPeriodInWeeks);
+    // result = result.replaceAll('@trialPeriodInMonths', product.trialPeriodInMonths);
+    // result = result.replaceAll('@trialPeriodInText', product.trialPeriodInText);
+    result = result.replaceAll('@price', product.storeProduct.priceString);
 
-    result = result.replaceAll('@currencyCode', product.currencyCode ?? '');
+    result = result.replaceAll('@currencyCode', product.storeProduct.currencyCode);
     result = result.replaceAll('@currencySymbol', product.currencySymbol);
 
     return result;
   }
 }
 
-extension QProductExtension on QProduct {
+extension QProductExtension on Package {
+  double get price {
+    return storeProduct.price;
+  }
+
   String get durationString {
-    switch (duration) {
-      case QProductDuration.monthly:
+    switch (packageType) {
+      case PackageType.monthly:
         return 'month';
-      case QProductDuration.annual:
+      case PackageType.annual:
         return 'year';
-      case QProductDuration.weekly:
+      case PackageType.weekly:
         return 'week';
-      case QProductDuration.threeMonths:
+      case PackageType.threeMonth:
         return '3 months';
-      case QProductDuration.sixMonths:
+      case PackageType.sixMonth:
         return '6 months';
-      case QProductDuration.lifetime:
+      case PackageType.lifetime:
         return 'lifetime';
-      case QProductDuration.unknown:
+      case PackageType.unknown:
         return 'lifetime';
       default:
         return 'lifetime';
@@ -58,28 +124,24 @@ extension QProductExtension on QProduct {
   String get pricePerWeek {
     final period = durationString;
 
-    if (price == null) {
-      return '';
-    }
-
     if (period == 'week') {
       return "$price";
     }
 
     if (period == 'month') {
-      return ((price ?? 0) / 4).toStringAsFixed(2);
+      return (price / 4).toStringAsFixed(2);
     }
 
     if (period == '3 months') {
-      return ((price ?? 0) / 12).toStringAsFixed(2);
+      return (price / 12).toStringAsFixed(2);
     }
 
     if (period == '6 months') {
-      return ((price ?? 0) / 24).toStringAsFixed(2);
+      return (price / 24).toStringAsFixed(2);
     }
 
     if (period == 'year') {
-      return (price ?? 0 / 52).toStringAsFixed(2);
+      return (price / 52).toStringAsFixed(2);
     }
 
     return '$price';
@@ -90,12 +152,8 @@ extension QProductExtension on QProduct {
   String get pricePerMonth {
     final period = durationString;
 
-    if (price == null) {
-      return '';
-    }
-
     if (period == 'week') {
-      return ((price ?? 0) * 4).toStringAsFixed(2);
+      return (price * 4).toStringAsFixed(2);
     }
 
     if (period == 'month') {
@@ -103,15 +161,15 @@ extension QProductExtension on QProduct {
     }
 
     if (period == '3 months') {
-      return ((price ?? 0) / 3).toStringAsFixed(2);
+      return (price / 3).toStringAsFixed(2);
     }
 
     if (period == '6 months') {
-      return ((price ?? 0) / 6).toStringAsFixed(2);
+      return (price / 6).toStringAsFixed(2);
     }
 
     if (period == 'year') {
-      return ((price ?? 0) / 12).toStringAsFixed(2);
+      return (price / 12).toStringAsFixed(2);
     }
 
     return '$price';
@@ -121,24 +179,20 @@ extension QProductExtension on QProduct {
   String get pricePerYear {
     final period = durationString;
 
-    if (price == null) {
-      return '';
-    }
-
     if (period == 'week') {
-      return ((price ?? 0) * 52).toStringAsFixed(2);
+      return (price * 52).toStringAsFixed(2);
     }
 
     if (period == 'month') {
-      return ((price ?? 0) * 12).toStringAsFixed(2);
+      return (price * 12).toStringAsFixed(2);
     }
 
     if (period == '3 months') {
-      return ((price ?? 0) * 4).toStringAsFixed(2);
+      return (price * 4).toStringAsFixed(2);
     }
 
     if (period == '6 months') {
-      return ((price ?? 0) * 2).toStringAsFixed(2);
+      return (price * 2).toStringAsFixed(2);
     }
 
     if (period == 'year') {
@@ -152,28 +206,24 @@ extension QProductExtension on QProduct {
   String get pricePerDay {
     final period = durationString;
 
-    if (price == null) {
-      return '';
-    }
-
     if (period == 'week') {
-      return ((price ?? 0) / 7).toStringAsFixed(2);
+      return (price / 7).toStringAsFixed(2);
     }
 
     if (period == 'month') {
-      return ((price ?? 0) / 30).toStringAsFixed(2);
+      return (price / 30).toStringAsFixed(2);
     }
 
     if (period == '3 months') {
-      return ((price ?? 0) / 90).toStringAsFixed(2);
+      return (price / 90).toStringAsFixed(2);
     }
 
     if (period == '6 months') {
-      return ((price ?? 0) / 180).toStringAsFixed(2);
+      return (price / 180).toStringAsFixed(2);
     }
 
     if (period == 'year') {
-      return ((price ?? 0) / 365).toStringAsFixed(2);
+      return (price / 365).toStringAsFixed(2);
     }
 
     return '$price';
@@ -181,10 +231,6 @@ extension QProductExtension on QProduct {
 
   // create function return raw price
   String get rawPrice {
-    if (price == null) {
-      return '';
-    }
-
     return '$price';
   }
 
@@ -324,112 +370,112 @@ extension QProductExtension on QProduct {
   }
 
   // create function return trial period in days
-  String get trialPeriodInDays {
-    switch (trialDuration) {
-      case QTrialDuration.threeDays:
-        return '3';
-      case QTrialDuration.week:
-        return '7';
-      case QTrialDuration.twoWeeks:
-        return '14';
-      case QTrialDuration.month:
-        return '30';
-      case QTrialDuration.twoMonths:
-        return '60';
-      case QTrialDuration.threeMonths:
-        return '90';
-      case QTrialDuration.sixMonths:
-        return '180';
-      case QTrialDuration.year:
-        return '365';
-      case QTrialDuration.notAvailable:
-        return '0';
-      default:
-        return '0';
-    }
-  }
+  // String get trialPeriodInDays {
+  //   switch (trialDuration) {
+  //     case QTrialDuration.threeDays:
+  //       return '3';
+  //     case QTrialDuration.week:
+  //       return '7';
+  //     case QTrialDuration.twoWeeks:
+  //       return '14';
+  //     case QTrialDuration.month:
+  //       return '30';
+  //     case QTrialDuration.twoMonths:
+  //       return '60';
+  //     case QTrialDuration.threeMonths:
+  //       return '90';
+  //     case QTrialDuration.sixMonths:
+  //       return '180';
+  //     case QTrialDuration.year:
+  //       return '365';
+  //     case QTrialDuration.notAvailable:
+  //       return '0';
+  //     default:
+  //       return '0';
+  //   }
+  // }
 
-  // create function return trial period in weeks
-  String get trialPeriodInWeeks {
-    switch (trialDuration) {
-      case QTrialDuration.threeDays:
-        return '0.42';
-      case QTrialDuration.week:
-        return '1';
-      case QTrialDuration.twoWeeks:
-        return '2';
-      case QTrialDuration.month:
-        return '4';
-      case QTrialDuration.twoMonths:
-        return '8';
-      case QTrialDuration.threeMonths:
-        return '12';
-      case QTrialDuration.sixMonths:
-        return '24';
-      case QTrialDuration.year:
-        return '52';
-      case QTrialDuration.notAvailable:
-        return '0';
-      default:
-        return '0';
-    }
-  }
+  // // create function return trial period in weeks
+  // String get trialPeriodInWeeks {
+  //   switch (trialDuration) {
+  //     case QTrialDuration.threeDays:
+  //       return '0.42';
+  //     case QTrialDuration.week:
+  //       return '1';
+  //     case QTrialDuration.twoWeeks:
+  //       return '2';
+  //     case QTrialDuration.month:
+  //       return '4';
+  //     case QTrialDuration.twoMonths:
+  //       return '8';
+  //     case QTrialDuration.threeMonths:
+  //       return '12';
+  //     case QTrialDuration.sixMonths:
+  //       return '24';
+  //     case QTrialDuration.year:
+  //       return '52';
+  //     case QTrialDuration.notAvailable:
+  //       return '0';
+  //     default:
+  //       return '0';
+  //   }
+  // }
 
-  // create function return trial period in months
-  String get trialPeriodInMonths {
-    switch (trialDuration) {
-      case QTrialDuration.threeDays:
-        return '0.142857';
-      case QTrialDuration.week:
-        return '0.25';
-      case QTrialDuration.twoWeeks:
-        return '0.5';
-      case QTrialDuration.month:
-        return '1';
-      case QTrialDuration.twoMonths:
-        return '2';
-      case QTrialDuration.threeMonths:
-        return '3';
-      case QTrialDuration.sixMonths:
-        return '6';
-      case QTrialDuration.year:
-        return '12';
-      case QTrialDuration.notAvailable:
-        return '0';
-      default:
-        return '0';
-    }
-  }
+  // // create function return trial period in months
+  // String get trialPeriodInMonths {
+  //   switch (trialDuration) {
+  //     case QTrialDuration.threeDays:
+  //       return '0.142857';
+  //     case QTrialDuration.week:
+  //       return '0.25';
+  //     case QTrialDuration.twoWeeks:
+  //       return '0.5';
+  //     case QTrialDuration.month:
+  //       return '1';
+  //     case QTrialDuration.twoMonths:
+  //       return '2';
+  //     case QTrialDuration.threeMonths:
+  //       return '3';
+  //     case QTrialDuration.sixMonths:
+  //       return '6';
+  //     case QTrialDuration.year:
+  //       return '12';
+  //     case QTrialDuration.notAvailable:
+  //       return '0';
+  //     default:
+  //       return '0';
+  //   }
+  // }
 
-  // create function return trial period in text
-  String get trialPeriodInText {
-    switch (trialDuration) {
-      case QTrialDuration.threeDays:
-        return '3-days';
-      case QTrialDuration.week:
-        return 'week';
-      case QTrialDuration.twoWeeks:
-        return '2-weeks';
-      case QTrialDuration.month:
-        return 'month';
-      case QTrialDuration.twoMonths:
-        return '2-months';
-      case QTrialDuration.threeMonths:
-        return '3-months';
-      case QTrialDuration.sixMonths:
-        return '6-months';
-      case QTrialDuration.year:
-        return 'year';
-      case QTrialDuration.notAvailable:
-        return '0';
-      default:
-        return '0';
-    }
-  }
+  // // create function return trial period in text
+  // String get trialPeriodInText {
+  //   switch (trialDuration) {
+  //     case QTrialDuration.threeDays:
+  //       return '3-days';
+  //     case QTrialDuration.week:
+  //       return 'week';
+  //     case QTrialDuration.twoWeeks:
+  //       return '2-weeks';
+  //     case QTrialDuration.month:
+  //       return 'month';
+  //     case QTrialDuration.twoMonths:
+  //       return '2-months';
+  //     case QTrialDuration.threeMonths:
+  //       return '3-months';
+  //     case QTrialDuration.sixMonths:
+  //       return '6-months';
+  //     case QTrialDuration.year:
+  //       return 'year';
+  //     case QTrialDuration.notAvailable:
+  //       return '0';
+  //     default:
+  //       return '0';
+  //   }
+  // }
 
   // create function return currency symbol by correncyCode if not found return correncyCode
   String get currencySymbol {
-    switch (currencyCode) {
+    switch (storeProduct.currencyCode) {
       case 'USD':
         return '\$';
       case 'EUR':
@@ -573,7 +619,7 @@ extension QProductExtension on QProduct {
       case 'SLL':
         return 'Le';
       default:
-        return currencyCode ?? '';
+        return storeProduct.currencyCode;
     }
   }
 }

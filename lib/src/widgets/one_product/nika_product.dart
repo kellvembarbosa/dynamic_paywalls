@@ -8,7 +8,6 @@ import 'package:dynamic_paywalls/src/widgets/widgets/social_proof_stars.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:styled_widget/styled_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../mixin_base_layout.dart';
 
@@ -26,36 +25,9 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
   @override
   void initState() {
     super.initState();
+    setMetadata(widget.configPaywall.layoutPaywall.args);
 
-    setData({
-      "show_btn_close_timer": 5,
-      "image": "https://picsum.photos/1200/600",
-      "rating": 4.5,
-      "title": "Unleash creativity \nwith PREMIUM \nexperience",
-      "subheadline": "What PREMIUM users get",
-      "product_id": "id.newipe.lifetime",
-      "btnText": "Start free trial",
-      "btnSecondaryText": "Free 3-day trial, then @price/@period",
-      "openTermsLink": "https://help.knksolutions.pt/newipe-eula/",
-      "openPrivacyLink": "https://help.knksolutions.pt/newipe-privacy/",
-      "starColor": "#FFC107",
-      "backgroundColor": "#ffffff",
-      "titleColor": "#000000",
-      "descriptionColor": "#000000",
-      "priceColor": "#000000",
-      "btnBackground": "#FFC107",
-      "btnTextColor": "#ffffff",
-      "btnTextSize": 16.0,
-      "btnSecondaryTextColor": "#ffffff",
-      "btnSecondaryTextSize": 10.0,
-      "purchaseDrawerBackgroundColor": "#ffffff",
-      "purchaseDrawerCornerRadius": 32.0,
-      "btnCloseColor": "#000000",
-    });
-
-    setData(widget.configPaywall.layoutPaywall.args);
-
-    _timer = Timer(Duration(seconds: data["show_btn_close_timer"]), () {
+    _timer = Timer(Duration(seconds: getMetadataInt("show_btn_close_timer", 0)), () {
       if (mounted) {
         setShowBtnCloseTimer(true);
       }
@@ -76,7 +48,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
     return Stack(
       children: [
         CachedNetworkImage(
-          imageUrl: data["image"],
+          imageUrl: getMetadataString("image", "https://picsum.photos/1200/600"),
           width: width,
           height: height,
           fit: BoxFit.cover,
@@ -89,7 +61,7 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
             children: [
               BtnCloseOneWidget(
                 showBtnCloseTimer: showBtnCloseTimer,
-                btnCloseColor: HexColor(data["btnCloseColor"]),
+                btnCloseColor: HexColor(getMetadataString("btn_close_color", "#000000")),
                 onPaywallClose: widget.configPaywall.onPaywallClose,
               ),
               const Spacer(),
@@ -97,18 +69,18 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                 width: width,
                 child: <Widget>[
                   SocialProofStarsWidget({
-                    "rating": data["rating"],
-                    "starColor": data["starColor"],
+                    "rating": getMetadataDouble("rating", 4.5),
+                    "starColor": getMetadataString("star_color", "#FFC107"),
                   }),
                   Text(
-                    data["title"].toString().replaceVariablesProduct(product: products[data["product_id"]]),
+                    getMetadataString("title", "Unleash creativity \nwith PREMIUM \nexperience").toString().replaceVariablesProduct(product: null),
                   ).fontSize(28).fontWeight(FontWeight.w900),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       const Icon(Icons.king_bed, color: Colors.yellow),
                       const SizedBox(width: 8),
-                      Text(data["subheadline"].toString().replaceVariablesProduct(product: products[data["product_id"]]))
+                      Text(getMetadataString("subheadline", "What PREMIUM users get").toString().replaceVariablesProduct(product: null))
                           .fontSize(16)
                           .fontWeight(FontWeight.w600),
                     ],
@@ -119,19 +91,19 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(data["btnText"].toString().replaceVariablesProduct(product: products[data["product_id"]]))
-                            .fontSize(data["btnTextSize"])
-                            .textColor(HexColor(data["btnTextColor"]))
+                        Text(getMetadataString("btn_text", "Start Free Trial").toString().replaceVariablesProduct(product: null))
+                            .fontSize(getMetadataDouble("btn_text_size", 16.0))
+                            .textColor(HexColor(getMetadataString("btn_text_color", "#ffffff")))
                             .fontWeight(FontWeight.w600),
-                        Text(data["btnSecondaryText"].toString().replaceVariablesProduct(product: products[data["product_id"]]))
-                            .fontSize(data["btnSecondaryTextSize"])
-                            .textColor(HexColor(data["btnSecondaryTextColor"])),
+                        Text(getMetadataString("btn_secondary_text", "#ffffff").toString().replaceVariablesProduct(product: null))
+                            .fontSize(getMetadataDouble("btn_secondary_text_size", 10.0))
+                            .textColor(HexColor(getMetadataString("btn_secondary_text_color", "#ffffff"))),
                       ],
                     ),
                   ).width(width * 0.8).padding(vertical: 12).backgroundColor(Colors.blue).clipRRect(all: 12).gestures(
                     onTap: () async {
                       debugPrint("Button tapped");
-                      await Paywalls.purchase(data["product_id"], widget.configPaywall.onPaywallClose);
+                      //await Paywalls.purchase(data["product_id"], widget.configPaywall.onPaywallClose);
                     },
                   ).center(),
                   <Widget>[
@@ -143,17 +115,13 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                         )
                         .fontSize(12)
                         .gestures(
-                          onTap: () => _launchUrl(
-                            Uri.parse(data["openPrivacyLink"]),
-                          ),
+                          onTap: () => {paywallListener?.onPrivacy.call()},
                         ),
                     const SizedBox(width: 4),
                     const Text("and").fontSize(12).fontWeight(FontWeight.w300),
                     const SizedBox(width: 4),
                     const Text("Terms").textStyle(const TextStyle(decoration: TextDecoration.underline)).fontSize(12).gestures(
-                          onTap: () => _launchUrl(
-                            Uri.parse(data["openTermsLink"]),
-                          ),
+                          onTap: () => {paywallListener?.onTerms.call()},
                         ),
                   ]
                       .toRow(
@@ -172,20 +140,20 @@ class _NikaLayoutState extends State<NikaLayout> with BaseLayoutMixin {
                       left: 32,
                       right: 32,
                     ),
-              ).backgroundColor(HexColor(data["purchaseDrawerBackgroundColor"])).clipRRect(
-                    topLeft: data["purchaseDrawerCornerRadius"],
-                    topRight: data["purchaseDrawerCornerRadius"],
+              )
+                  .backgroundColor(
+                    HexColor(
+                      getMetadataString("purchase_drawer_background_color", "#ffffff"),
+                    ),
+                  )
+                  .clipRRect(
+                    topLeft: getMetadataDouble("purchase_drawer_corner_radius", 32.0), //data["purchaseDrawerCornerRadius"],
+                    topRight: getMetadataDouble("purchase_drawer_corner_radius", 32.0),
                   ),
             ],
           ),
         ),
       ],
     );
-  }
-
-  Future<void> _launchUrl(Uri url) async {
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
-    }
   }
 }

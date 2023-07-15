@@ -13,3 +13,5 @@ export 'src/models/config_paywall.dart';
 export 'src/constants.dart';
 
 // export packages
+export 'package:purchases_flutter/purchases_flutter.dart';
+export 'package:glassfy_flutter/glassfy_flutter.dart';

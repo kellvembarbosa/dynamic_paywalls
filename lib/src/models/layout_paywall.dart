@@ -1,6 +1,6 @@
 ﻿class LayoutPaywall {
   final String model;
-  final Map<String, dynamic> args;
+  final Map<String, Object> args;
 
   LayoutPaywall({required this.model, this.args = const {}});
 
