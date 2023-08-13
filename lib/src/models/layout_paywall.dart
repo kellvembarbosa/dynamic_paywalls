@@ -1,18 +1,8 @@
 ﻿class LayoutPaywall {
-  final String model;
+  final PaywallModel model;
   final Map<String, Object> args;
 
   LayoutPaywall({required this.model, this.args = const {}});
-
-  factory LayoutPaywall.fromJson(Map<String, dynamic> json) {
-    return LayoutPaywall(
-      model: json['model'],
-      args: json['args'],
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'model': model,
-        'args': args,
-      };
 }
+
+enum PaywallModel { loading, nika, juliet }

@@ -28,18 +28,7 @@ void main() async {
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
-      tools: [
-        SliverToBoxAdapter(
-          // Envolve o Material em um SliverToBoxAdapter
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Container(
-              height: 320,
-              width: double.infinity,
-              color: Colors.black,
-            ),
-          ),
-        ),
+      tools: const [
         ...DevicePreview.defaultTools,
       ],
       builder: (context) => const MyApp(),
@@ -122,6 +111,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           onDonePressed: () {
                             Get.off(
                               () => Paywalls.getPaywall(
+                                ConfigPaywall(
+                                  layoutPaywall: LayoutPaywall(model: PaywallModel.nika),
+                                ),
                                 isDesignMode: controller.isDesignMode,
                                 data: controller.paywallLayout ?? loadingLayout,
                                 onPaywallClose: () {
@@ -144,6 +136,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: FilledButton(
                       onPressed: () => Get.to(
                         () => Paywalls.getPaywall(
+                          ConfigPaywall(
+                            layoutPaywall: LayoutPaywall(model: PaywallModel.juliet),
+                          ),
                           isDesignMode: controller.isDesignMode,
                           data: controller.paywallLayout ?? loadingLayout,
                           onPaywallClose: () {

@@ -7,7 +7,7 @@ import '../../dynamic_paywalls.dart';
 class PaywallService extends GetxService {
   final _configPaywall = ConfigPaywall(
     layoutPaywall: LayoutPaywall(
-      model: "one_product",
+      model: PaywallModel.loading,
       args: {},
     ),
   ).obs;

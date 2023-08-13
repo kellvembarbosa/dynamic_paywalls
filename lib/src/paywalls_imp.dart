@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:glassfy_flutter/glassfy_flutter.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 
 class Paywalls {
   static late final CustomConfig? _customConfig;
@@ -71,37 +69,41 @@ class Paywalls {
   }
 
   /// Get the paywall widget
-  static Widget getPaywall({bool isDesignMode = false, ConfigPaywall? data, required Function onPaywallClose}) {
+  static Widget getPaywall(ConfigPaywall configPaywall, {bool isDesignMode = false, ConfigPaywall? data, required Function onPaywallClose}) {
     //updateRemoteConfigs(isDesignMode: isDesignMode, data: data, onPaywallClose: onPaywallClose);
+    paywallService.configPaywall = configPaywall;
+    paywallService.isLoading = false;
     return Paywall();
   }
 
   // get remote configs
-  static updateRemoteConfigs({Function? onPaywallClose, bool isDesignMode = false, ConfigPaywall? data}) async {
-    debugPrint("updateRemoteConfigs $isDesignMode $data");
+  // static updateRemoteConfigs({Function? onPaywallClose, bool isDesignMode = false, ConfigPaywall? data}) async {
+  //   debugPrint("updateRemoteConfigs $isDesignMode $data");
 
-    if (isDesignMode) {
-      // paywallService.setQRemoteConfig(data ?? _paywallFallback);
-      return;
-    } else {
-      if (Platform.isAndroid || Platform.isIOS) {
-        // try {
-        //   final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
+  //   if (isDesignMode) {
+  //     // paywallService.setQRemoteConfig(data ?? _paywallFallback);
+  //     paywallService.setOfferings(null);
+  //     paywallService.isLoading = false;
+  //     return;
+  //   } else {
+  //     if (Platform.isAndroid || Platform.isIOS) {
+  //       // try {
+  //       //   final remoteConfig = await Qonversion.getSharedInstance().remoteConfig();
 
-        //   if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
-        //     final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
+  //       //   if (remoteConfig.experiment == null || remoteConfig.payload.toString() == "{}") {
+  //       //     final paywallRemote = await _paywallConnect.getPaywallRemote(_paywallUrl);
 
-        //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote, onPaywallClose: onPaywallClose));
-        //   } else {
-        //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload, onPaywallClose: onPaywallClose));
-        //   }
-        // } catch (e) {
-        //   debugPrint(e.toString());
-        //   paywallService.setQRemoteConfig(_paywallFallback);
-        // }
-      }
-    }
-  }
+  //       //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(paywallRemote, onPaywallClose: onPaywallClose));
+  //       //   } else {
+  //       //     paywallService.setQRemoteConfig(ConfigPaywall.fromJson(remoteConfig.payload, onPaywallClose: onPaywallClose));
+  //       //   }
+  //       // } catch (e) {
+  //       //   debugPrint(e.toString());
+  //       //   paywallService.setQRemoteConfig(_paywallFallback);
+  //       // }
+  //     }
+  //   }
+  // }
 
   /// Check if the user is a premium user
   static Future<void> checkPermissions() async {

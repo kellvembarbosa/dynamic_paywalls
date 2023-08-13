@@ -1,4 +1,5 @@
-﻿import 'package:dynamic_paywalls/src/controllers/controller_paywall.dart';
+﻿import 'package:dynamic_paywalls/dynamic_paywalls.dart';
+import 'package:dynamic_paywalls/src/controllers/controller_paywall.dart';
 import 'package:dynamic_paywalls/src/models/config_paywall.dart';
 import 'package:dynamic_paywalls/src/widgets/mulitple_products/juliet_layout.dart';
 import 'package:dynamic_paywalls/src/widgets/one_product/nika_product.dart';
@@ -15,11 +16,11 @@ class Paywall extends StatelessWidget {
 
   Widget _buildWidget(ConfigPaywall configPaywall) {
     switch (configPaywall.layoutPaywall.model) {
-      case "nika_paywall":
+      case PaywallModel.nika:
         return NikaLayout(
           configPaywall: configPaywall,
         );
-      case "juliet_paywall":
+      case PaywallModel.juliet:
         return JulietLayout(
           configPaywall: configPaywall,
         );
